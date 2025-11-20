@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Sr. Artur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .agent-name-input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            padding: 4px 8px;
+            margin: 0;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 900;
+            cursor: pointer;
+            line-height: inherit;
+            text-align: center;
+            text-align-last: center;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            background-image: none;
+        }
+        .agent-name-input:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .agent-name-input.is-scale-placeholder {
+            opacity: 0.35;
+            background-color: #f9fafb; /* gray-50 */
+            border-style: dashed;
+        }
+        .agent-name-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+            border-color: #6366f1;
+        }
+        .tab-button {
+            padding: 0.5rem 0.25rem;
+            border-radius: 0.375rem; /* rounded-md */
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.8rem;
+            width: 100%;
+            text-align: center;
+        }
+        .tab-button:hover {
+            background-color: #e2e8f0; /* slate-200 */
+        }
+        .tab-button.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: #fff;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        #login-modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .static-agent-name {
+            display: none;
+        }
+        
+        /* --- REGRAS DE IMPRESSÃO --- */
+        @media print {
+            main, #login-modal {
+                display: none !important;
+            }
+
+            body * {
+                visibility: hidden !important;
+            }
+
+            #print-view, #print-view * {
+                visibility: visible !important;
+            }
+
+            #print-view {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            
+            body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                font-size: 10pt !important;
+                line-height: 1.2;
+                color: black !important;
+            }
+            
+            @page {
+                size: A4 landscape;
+                margin: 8mm;
+            }
+            
+            #print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 2px solid #1e40af !important;
+                table-layout: fixed;
+                font-size: 9pt !important;
+                page-break-inside: avoid;
+            }
+            
+            #print-table td, #print-table th {
+                border: 1px solid #374151 !important;
+                padding: 6px 4px !important;
+                text-align: center !important;
+                vertical-align: top !important;
+                line-height: 1.3 !important;
+                height: auto !important;
+            }
+            
+            #print-table th {
+                color: white !important;
+                font-weight: bold !important;
+                font-size: 10pt !important;
+                padding: 8px 4px !important;
+            }
+            
+            #print-table .week-header th {
+                 background: #1e40af !important;
+            }
+            
+            #print-table .week-header th:first-child {
+                width: 40px !important;
+                padding-left: 2px !important;
+                padding-right: 2px !important;
+            }
+
+            .print-title-container {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
+                color: white !important;
+                font-weight: bold !important;
+                font-size: 16pt !important;
+                padding: 12px !important;
+                border: 2px solid #1e3a8a !important;
+                margin-bottom: 10px !important;
+                border-radius: 6px !important;
+                text-align: center !important;
+            }
+
+            .print-title {
+                margin: 0 !important;
+                text-align: center !important;
+            }
+
+            .month-year-reference {
+                background: #e5e7eb !important;
+                color: #1e40af !important;
+                font-weight: bold !important;
+                font-size: 12pt !important;
+                text-align: center !important;
+                padding: 8px !important;
+                border: 1px solid #9ca3af !important;
+                margin-bottom: 8px !important;
+                border-radius: 4px !important;
+                display: block !important;
+            }
+            
+            .static-agent-name { 
+                display: block !important;
+                font-weight: 700 !important;
+                font-size: 9pt !important;
+                text-align: center !important;
+                padding: 3px 2px !important;
+                color: #000 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                vertical-align: middle !important;
+            }
+            
+            .agent-names-container {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 3px !important;
+                padding: 4px 0 !important;
+                min-height: 40px !important;
+            }
+            
+            .print-date-label {
+                display: block !important;
+                background: #3b82f6 !important;
+                color: white !important;
+                font-weight: bold !important;
+                font-size: 10pt !important;
+                padding: 6px 4px !important;
+                border-radius: 4px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .print-month-cell {
+                background: #1e40af !important;
+                color: white !important;
+                font-weight: bold !important;
+                font-size: 9pt !important;
+                writing-mode: vertical-rl !important;
+                text-orientation: mixed !important;
+                transform: rotate(180deg) !important;
+                padding: 8px 2px !important;
+                width: 40px !important;
+            }
+            
+            .print-summary-container {
+                display: block !important;
+                width: 100% !important;
+                page-break-before: avoid;
+            }
+            
+            .print-summary-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 9pt !important;
+            }
+            
+            .print-summary-table th {
+                background: #374151 !important;
+                color: white !important;
+                padding: 6px 8px !important;
+                text-align: left !important;
+            }
+            
+            .print-summary-table td {
+                padding: 4px 8px !important;
+                border-bottom: 1px solid #d1d5db !important;
+            }
+            
+            #print-table td:empty {
+                min-height: 60px;
+            }
+            
+            #print-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-6 md:p-8">
+
+    <!-- Modal de Login -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm mx-4">
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Acesso Restrito</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-slate-700">Usuário (Email)</label>
+                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-slate-700">Senha</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm text-center mb-4 hidden">Usuário ou senha inválidos.</p>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <main class="max-w-none mx-auto bg-white p-3 sm:p-6 rounded-2xl shadow-lg">
+        <!-- Cabeçalho com Título e Controles -->
+        <div id="header" class="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full mb-4 gap-4">
+            <div class="title-container flex-grow">
+                 <h1 class="text-xl sm:text-2xl font-bold text-slate-700">
+                    <span id="editable-title-part" contenteditable="false" class="rounded-md px-2 block sm:inline">ESCALA SR. ARTUR</span>
+                    <span id="location-part" class="block sm:inline"></span>
+                    <span id="date-title-part" class="block sm:inline text-slate-500 text-lg"></span>
+                </h1>
+            </div>
+            <div id="controls-header" class="flex flex-wrap items-center gap-2 sm:gap-4 w-full lg:w-auto">
+                 <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <select id="schedule-type-select" class="flex-grow sm:flex-grow-0 p-2 border border-slate-300 rounded-md shadow-sm bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer max-w-full">
+                        <option value="escala_sr_artur">Escala Sr. Artur (Padrão)</option>
+                        <option value="extra">Escala Extra</option>
+                    </select>
+                    <div class="flex gap-2 flex-grow sm:flex-grow-0">
+                        <select id="month-select" class="flex-grow p-2 border border-slate-300 rounded-md shadow-sm bg-white text-sm text-slate-700 capitalize focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer"></select>
+                        <select id="year-select" class="w-20 p-2 border border-slate-300 rounded-md shadow-sm bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer"></select>
+                    </div>
+                 </div>
+                 <div class="flex gap-2 w-full sm:w-auto justify-end">
+                     <button id="login-button" class="px-4 py-2 bg-slate-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-slate-700">Login</button>
+                     <button id="logout-button" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-red-700 hidden">Sair</button>
+                     <button id="save-button" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">Salvar</button>
+                     <div id="print-button-container" class="relative flex items-center justify-center">
+                        <button id="print-button" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center gap-2" title="Imprimir Escala">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-printer">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            <span class="hidden sm:inline">Imprimir</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navegação das Abas SIMPLIFICADA -->
+        <nav id="tabs-nav" class="flex flex-wrap space-x-1 sm:space-x-2 p-1 bg-slate-100 rounded-lg mb-6 overflow-x-auto">
+            <button data-tab="current-scale" class="tab-button active flex-shrink-0 w-1/2 sm:w-auto px-6">Escala Atual</button>
+            <button data-tab="past-scales" class="tab-button flex-shrink-0 w-1/2 sm:w-auto px-6">Escalas Salvas</button>
+        </nav>
+
+        <!-- Conteúdo da Aba "Escala Atual" -->
+        <div id="current-scale-view" class="tab-content">
+            <div id="print-layout-container" class="flex flex-col lg:flex-row w-full gap-6">
+                <!-- Calendário da Escala -->
+                <div class="flex-grow table-container overflow-x-auto border border-slate-200 rounded-lg shadow-sm">
+                    <table class="w-full border-collapse text-center table-fixed min-w-[900px]">
+                        <thead>
+                            <tr class="bg-slate-900 text-white uppercase text-xs sm:text-sm tracking-wider">
+                                <th class="p-3 rounded-tl-lg font-bold" style="width: 50px;">Mês</th>
+                                <th class="p-3 font-bold">SEGUNDA</th>
+                                <th class="p-3 font-bold">TERÇA</th>
+                                <th class="p-3 font-bold">QUARTA</th>
+                                <th class="p-3 font-bold">QUINTA</th>
+                                <th class="p-3 font-bold">SEXTA</th>
+                                <th class="p-3 font-bold">SÁBADO</th>
+                                <th class="p-3 rounded-tr-lg font-bold">DOMINGO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-body" class="bg-white"></tbody>
+                    </table>
+                </div>
+                <!-- Resumo de Plantões -->
+                <aside class="w-full lg:w-1/4 flex-shrink-0 summary-container">
+                    <div class="bg-slate-100 p-4 rounded-lg h-full">
+                        <h2 class="text-sm font-bold text-slate-900 bg-slate-200 -m-4 mb-0 p-4 rounded-t-lg uppercase tracking-wider text-center">Plantões Trabalhados</h2>
+                        <table class="w-full mt-4 text-sm">
+                            <thead class="summary-table-header">
+                                <tr class="text-left">
+                                    <th class="pb-2 font-bold text-slate-600">Agente</th>
+                                    <th class="pb-2 font-bold text-slate-600 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-body"></tbody>
+                        </table>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- Conteúdo UNIFICADO das Abas Salvas -->
+        <div id="past-scales-view" class="tab-content hidden">
+            <div id="past-scales-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </div>
+        
+    </main>
+
+    <!-- View de Impressão -->
+    <div id="print-view" class="hidden">
+        <div class="print-title-container">
+            <div class="print-title" id="print-title-text">ESCALA SR. ARTUR</div>
+        </div>
+        <div id="month-year-reference" class="month-year-reference"></div>
+
+        <div id="print-layout-wrapper" style="display: flex !important; flex-direction: row !important; width: 100% !important; gap: 12px !important; align-items: flex-start;">
+            
+            <table id="print-table" class="w-full" style="width: 70% !important;">
+                <thead>
+                    <tr class="week-header">
+                        <th>Mês</th>
+                        <th>SEGUNDA</th>
+                        <th>TERÇA</th>
+                        <th>QUARTA</th>
+                        <th>QUINTA</th>
+                        <th>SEXTA</th>
+                        <th>SÁBADO</th>
+                        <th>DOMINGO</th>
+                    </tr>
+                </thead>
+                <tbody id="print-body"></tbody>
+            </table>
+
+            <div class="print-summary-container" style="width: 30% !important; margin-top: 0 !important;">
+                <div style="background: #f8fafc !important; padding: 12px !important; border-radius: 6px !important; border: 1px solid #e2e8f0 !important; height: 100% !important;">
+                    <h2 style="font-size: 11pt !important; font-weight: bold !important; color: #1e293b !important; background: #e2e8f0 !important; margin: -12px -12px 12px -12px !important; padding: 8px 12px !important; border-radius: 6px 6px 0 0 !important; text-align: center !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;">
+                        Plantões Trabalhados
+                    </h2>
+                    <table class="print-summary-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left !important;">Agente</th>
+                                <th style="text-align: right !important;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="print-summary-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db, auth;
+        let appId;
+        let userId;
+        let isAppInitialized = false;
+
+        const initializeAppLogic = () => {
+            if (isAppInitialized) return;
+            isAppInitialized = true;
+
+            // Alterado ID para separar do app anterior se necessário, mas mantido simples
+            appId = 'escala-sr-artur-v1';
+            
+            const scheduleTypeSelect = document.getElementById('schedule-type-select');
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const calendarBody = document.getElementById('calendar-body');
+            const summaryBody = document.getElementById('summary-body');
+            const dateTitlePart = document.getElementById('date-title-part');
+            const editableTitlePart = document.getElementById('editable-title-part');
+            const locationPart = document.getElementById('location-part');
+            const printButton = document.getElementById('print-button');
+            const saveButton = document.getElementById('save-button');
+            const loginButton = document.getElementById('login-button');
+            const logoutButton = document.getElementById('logout-button');
+            const loginModal = document.getElementById('login-modal');
+            const loginForm = document.getElementById('login-form');
+            const loginError = document.getElementById('login-error');
+            const tabsNav = document.getElementById('tabs-nav');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const pastScalesList = document.getElementById('past-scales-list');
+            
+            // Elementos da view de impressão
+            const printView = document.getElementById('print-view');
+            const printBody = document.getElementById('print-body');
+            const printSummaryBody = document.getElementById('print-summary-body');
+            const monthYearReference = document.getElementById('month-year-reference');
+            const printTitleText = document.getElementById('print-title-text');
+
+            let sessionTimeoutId = null;
+            const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
+            
+            const PT_BR_MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+            const ALLOWED_NAMES = ['EDUARDO', 'ESCALA', 'GABRIEL', 'GARCEZ', 'LEANDRO', 'LISBOA', 'MALCHER', 'PENNA', 'THEODORO', 'VIEIRA', 'WASHINGTON'];
+
+            function prepareForPrint() {
+                console.log("🖨️ Preparando para impressão...");
+                
+                const month = parseInt(monthSelect.value);
+                const year = parseInt(yearSelect.value);
+                
+                const mainTitle = editableTitlePart.textContent || '';
+                const subTitle = locationPart.textContent || '';
+                printTitleText.textContent = mainTitle + subTitle;
+
+                monthYearReference.textContent = `${PT_BR_MONTHS[month]} DE ${year}`;
+                
+                printBody.innerHTML = '';
+                printSummaryBody.innerHTML = '';
+                
+                const agentCounts = {};
+                
+                const calendarRows = calendarBody.querySelectorAll('tr');
+                
+                calendarRows.forEach((row, rowIndex) => {
+                    const cells = row.querySelectorAll('td');
+                    const printRow = document.createElement('tr');
+                    
+                    let dayCellStartIndex = 0; 
+
+                    if (cells.length === 8) {
+                        const monthCell = document.createElement('td');
+                        monthCell.className = 'print-month-cell';
+                        monthCell.textContent = cells[0].textContent || '';
+                        
+                        const originalRowSpan = cells[0].rowSpan;
+                        if (originalRowSpan > 1) {
+                            monthCell.rowSpan = originalRowSpan;
+                        }
+
+                        printRow.appendChild(monthCell);
+                        dayCellStartIndex = 1; 
+                    } 
+                    else if (cells.length === 7) {
+                        dayCellStartIndex = 0;
+                    } 
+                    else {
+                        return;
+                    }
+
+                    for (let i = dayCellStartIndex; i < cells.length; i++) {
+                        const dayCell = cells[i];
+                        const printDayCell = document.createElement('td');
+                        
+                        const dateLabel = dayCell.querySelector('.date-label');
+                        
+                        if (dateLabel && dateLabel.textContent.trim() !== '') {
+                                const dateText = dateLabel.textContent;
+                                const agentInputs = dayCell.querySelectorAll('.agent-name-input');
+                                const agentNames = [];
+                                
+                                agentInputs.forEach(input => {
+                                    const agentName = input.value.trim();
+                                    if (agentName && agentName !== '') {
+                                        agentNames.push(agentName);
+                                        if (agentName !== 'ESCALA') {
+                                            agentCounts[agentName] = (agentCounts[agentName] || 0) + 1;
+                                        }
+                                    }
+                                });
+                                
+                                printDayCell.innerHTML = `
+                                    <div class="print-date-label">${dateText}</div>
+                                    <div class="agent-names-container">
+                                        ${agentNames.map(name => 
+                                            `<div class="static-agent-name">${name}</div>`
+                                        ).join('')}
+                                    </div>
+                                `;
+                            } else {
+                                printDayCell.innerHTML = '&nbsp;';
+                            }
+                            
+                            printRow.appendChild(printDayCell);
+                        }
+                        
+                        printBody.appendChild(printRow);
+                
+            });
+                
+                const sortedAgents = Object.keys(agentCounts).sort();
+                
+                if (sortedAgents.length === 0) {
+                    printSummaryBody.innerHTML = `
+                        <tr>
+                            <td colspan="2" style="text-align: center; padding: 12px; color: #64748b; font-style: italic;">
+                                Nenhum plantão registrado
+                            </td>
+                        </tr>`;
+                } else {
+                    sortedAgents.forEach(name => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="font-weight: 600; color: #1e293b;">${name}</td>
+                            <td style="font-weight: bold; color: #1e40af; text-align: right;">${agentCounts[name]}</td>
+                        `;
+                        printSummaryBody.appendChild(row);
+                    });
+                }
+            }
+
+            function handlePrint() {
+                setTimeout(() => {
+                    prepareForPrint();
+                    printView.classList.remove('hidden');
+                    setTimeout(() => {
+                        window.print();
+                        setTimeout(() => {
+                            printView.classList.add('hidden');
+                        }, 100);
+                    }, 500);
+                }, 100);
+            }
+
+            const enableEditing = () => {
+                editableTitlePart.contentEditable = "true";
+                editableTitlePart.classList.add('hover:bg-slate-200', 'focus:ring-2', 'focus:ring-indigo-400');
+                document.querySelectorAll('.agent-name-input').forEach(el => el.disabled = false);
+                saveButton.disabled = false;
+                loginButton.classList.add('hidden');
+                logoutButton.classList.remove('hidden');
+            };
+
+            const disableEditing = () => {
+                editableTitlePart.contentEditable = "false";
+                editableTitlePart.classList.remove('hover:bg-slate-200', 'focus:ring-2', 'focus:ring-indigo-400');
+                document.querySelectorAll('.agent-name-input').forEach(el => el.disabled = true);
+                saveButton.disabled = true;
+                loginButton.classList.remove('hidden');
+                logoutButton.classList.add('hidden');
+            };
+            
+            const resetSessionTimer = () => {
+                clearTimeout(sessionTimeoutId);
+                sessionTimeoutId = setTimeout(() => {
+                    alert('Sua sessão de edição expirou por inatividade.');
+                    logout();
+                }, SESSION_TIMEOUT_MS);
+            };
+
+            const logout = () => {
+                disableEditing();
+                clearTimeout(sessionTimeoutId);
+                sessionTimeoutId = null;
+                if (auth) {
+                    signOut(auth).catch(error => console.error("Erro ao fazer logout:", error));
+                }
+            };
+
+            loginButton.addEventListener('click', () => loginModal.classList.remove('hidden'));
+            logoutButton.addEventListener('click', logout);
+
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) {
+                    loginModal.classList.add('hidden');
+                }
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = e.target.username.value;
+                const password = e.target.password.value;
+                
+                loginError.classList.add('hidden');
+                
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, username, password);
+                    enableEditing();
+                    resetSessionTimer();
+                    loginModal.classList.add('hidden');
+                    e.target.reset();
+
+                } catch (error) {
+                    console.error("Falha no login:", error.code);
+                    loginError.textContent = "Email ou senha inválidos.";
+                    loginError.classList.remove('hidden');
+                }
+            });
+            
+            ['click', 'mousemove', 'keypress', 'change'].forEach(event => {
+                document.addEventListener(event, () => {
+                    if (sessionTimeoutId) {
+                        resetSessionTimer();
+                    }
+                });
+            });
+
+            printButton.addEventListener('click', handlePrint);
+
+            const updateSummary = () => {
+                const agentCounts = {};
+                calendarBody.querySelectorAll('.agent-name-input').forEach(field => {
+                    const name = field.value;
+                    if (name && name !== 'ESCALA') agentCounts[name] = (agentCounts[name] || 0) + 1;
+                });
+                summaryBody.innerHTML = '';
+                const sortedAgents = Object.keys(agentCounts).sort();
+                if (sortedAgents.length === 0) {
+                     summaryBody.innerHTML = `<tr><td colspan="2" class="pt-3 text-slate-500 text-center">-</td></tr>`;
+                } else {
+                    sortedAgents.forEach(name => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td class="py-1.5 font-semibold text-slate-800">${name}</td><td class="py-1.5 font-bold text-indigo-600 text-right">${agentCounts[name]}</td>`;
+                        summaryBody.appendChild(row);
+                    });
+                }
+            };
+
+            const applyPlaceholderStyle = (selectElement) => {
+                if (selectElement.value === 'ESCALA') {
+                    selectElement.classList.add('is-scale-placeholder');
+                } else {
+                    selectElement.classList.remove('is-scale-placeholder');
+                }
+            };
+            
+            const adjustSelectWidth = (selectElement) => {
+                if (!selectElement || !selectElement.options) return;
+                if (!selectElement.value) {
+                    selectElement.style.width = '100%';
+                    return;
+                }
+                const tempSpan = document.createElement('span');
+                const style = window.getComputedStyle(selectElement);
+                tempSpan.style.font = style.font;
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.paddingLeft = style.paddingLeft;
+                tempSpan.style.paddingRight = style.paddingRight;
+                tempSpan.textContent = selectElement.options[selectElement.selectedIndex].text;
+                document.body.appendChild(tempSpan);
+                selectElement.style.width = `${tempSpan.offsetWidth + 5}px`;
+                document.body.removeChild(tempSpan);
+            };
+
+            const saveScheduleData = async () => {
+                if (!db || !auth.currentUser || !userId) return;
+
+                if (auth.currentUser.isAnonymous) {
+                    alert("Erro: Você está em modo de leitura. Faça login para salvar.");
+                    return;
+                }
+
+                saveButton.disabled = true;
+                saveButton.textContent = 'Salvando...';
+
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const scheduleType = scheduleTypeSelect.value;
+                const docId = `${year}-${String(month + 1).padStart(2, '0')}-${scheduleType}`;
+                
+                const scheduleData = {};
+                calendarBody.querySelectorAll('.agent-name-input').forEach(field => {
+                    const date = field.dataset.date;
+                    const index = parseInt(field.dataset.index);
+                    if (field.value) {
+                        if (!scheduleData[date]) scheduleData[date] = ['', ''];
+                        scheduleData[date][index] = field.value;
+                    }
+                });
+
+                const dataToSave = {
+                    title: editableTitlePart.textContent,
+                    schedule: scheduleData,
+                    createdAt: new Date()
+                };
+
+                try {
+                    const scheduleRef = doc(db, `schedules/${appId}/periods`, docId); 
+                    await setDoc(scheduleRef, dataToSave);
+                    saveButton.textContent = 'Salvo ✓';
+                } catch (error) {
+                    console.error("Error saving schedule data: ", error);
+                    saveButton.textContent = 'Erro ao Salvar';
+                    alert(`Ocorreu um erro ao salvar a escala.`);
+                } finally {
+                    setTimeout(() => {
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Salvar Escala';
+                    }, 2000);
+                }
+            };
+
+            const loadScheduleData = async (year, month, scheduleType) => {
+                if (!db || !auth.currentUser || !userId) return;
+                
+                const docId = `${year}-${String(month + 1).padStart(2, '0')}-${scheduleType}`;
+                const scheduleRef = doc(db, `schedules/${appId}/periods`, docId); 
+                
+                try {
+                    const docSnap = await getDoc(scheduleRef);
+                    const data = docSnap.exists() ? docSnap.data() : null;
+                    
+                    let scheduleData;
+
+                    if (data?.title) {
+                        editableTitlePart.textContent = data.title;
+                        const defaultTitles = ['ESCALA SR. ARTUR', 'ESCALA EXTRA'];
+                        if (!defaultTitles.includes(data.title)) {
+                            locationPart.textContent = '';
+                        }
+                    }
+                    
+                    scheduleData = data?.schedule || {};
+
+                    document.querySelectorAll('.agent-name-input').forEach(select => {
+                        const date = select.dataset.date;
+                        const index = parseInt(select.dataset.index);
+                        const agentName = scheduleData[date]?.[index] || '';
+                        
+                        if (ALLOWED_NAMES.includes(agentName)) {
+                             select.value = agentName;
+                        } else {
+                             select.value = '';
+                        }
+                       
+                        adjustSelectWidth(select);
+                        applyPlaceholderStyle(select);
+                    });
+                    
+                    updateSummary();
+
+                } catch(error) {
+                    console.error("Error loading schedule data:", error);
+                    updateSummary();
+                }
+            };
+            
+            window.loadScheduleDataForCurrentView = loadScheduleData;
+
+            const loadPreviousScales = async () => {
+                if (!db || !auth.currentUser || !userId) return;
+                
+                const listEl = pastScalesList;
+                listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Carregando escalas salvas...</p>';
+                
+                const schedulesRef = collection(db, `schedules/${appId}/periods`); 
+                try {
+                    const querySnapshot = await getDocs(schedulesRef);
+                    const scales = [];
+                    querySnapshot.forEach((doc) => {
+                        scales.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    listEl.innerHTML = '';
+                    if (scales.length === 0) {
+                        listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Nenhuma escala salva encontrada.</p>';
+                        return;
+                    }
+                    
+                    scales.sort((a, b) => b.id.localeCompare(a.id));
+
+                    scales.forEach(scale => {
+                        const [year, month, ...typeParts] = scale.id.split('-');
+                        const type = typeParts.join('-');
+                        const monthName = PT_BR_MONTHS[parseInt(month) - 1];
+                        
+                        let scheduleTypeName;
+                        let typeColorClass;
+                        if (type === 'escala_sr_artur') {
+                            scheduleTypeName = 'Sr. Artur';
+                            typeColorClass = 'bg-blue-100 text-blue-800';
+                        } else {
+                            scheduleTypeName = 'Extra';
+                            typeColorClass = 'bg-purple-100 text-purple-800';
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'block p-4 border border-slate-200 rounded-lg hover:shadow-md hover:border-indigo-400 cursor-pointer transition-all';
+                        card.innerHTML = `
+                            <h3 class="font-bold text-slate-800">${scale.title || 'Sem título'}</h3>
+                            <p class="text-sm text-slate-600">${monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase()} / ${year}</p>
+                            <p class="text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block ${typeColorClass}">${scheduleTypeName}</p>
+                        `;
+                        card.addEventListener('click', () => {
+                            yearSelect.value = year;
+                            monthSelect.value = parseInt(month) - 1;
+                            scheduleTypeSelect.value = type;
+                            handleDateChange();
+                            tabsNav.querySelector('button[data-tab="current-scale"]').click();
+                        });
+                        listEl.appendChild(card);
+                    });
+                } catch (error) {
+                    console.error("Error fetching previous scales:", error);
+                    listEl.innerHTML = '<p class="text-red-500">Erro ao carregar escalas.</p>';
+                }
+            };
+            
+            tabsNav.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-button')) {
+                    const tabId = e.target.dataset.tab;
+                    tabsNav.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    tabContents.forEach(content => {
+                        // Simplificado: ou mostra view atual ou view de salvas
+                        if (tabId === 'current-scale') {
+                            if (content.id === 'current-scale-view') content.classList.remove('hidden');
+                            else content.classList.add('hidden');
+                        } else {
+                             if (content.id === 'past-scales-view') content.classList.remove('hidden');
+                             else content.classList.add('hidden');
+                        }
+                    });
+                    
+                    if (tabId === 'past-scales') {
+                        loadPreviousScales();
+                    }
+                }
+            });
+
+            const generateCalendar = (year, month, scheduleType) => {
+                calendarBody.innerHTML = '';
+                const startDate = new Date(year, month, 16);
+                const endDate = new Date(year, month + 1, 15);
+                
+                let currentDate = new Date(startDate);
+                while (currentDate.getDay() !== 1) { currentDate.setDate(currentDate.getDate() - 1); }
+
+                const weeks = [];
+                let loopEndDate = new Date(endDate);
+                while (weeks.length === 0 || loopEndDate >= currentDate) {
+                    let week = Array(7).fill(null);
+                    for (let i = 0; i < 7; i++) {
+                        if (currentDate >= startDate && currentDate <= endDate) week[i] = new Date(currentDate);
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    if (week.some(d => d !== null)) weeks.push(week);
+                }
+                
+                let monthRowspans = {};
+                weeks.forEach(week => week.forEach(day => {
+                    if (day) monthRowspans[day.getMonth()] = (monthRowspans[day.getMonth()] || 0) + 1;
+                }));
+                 
+                let renderedMonths = [];
+                weeks.forEach(week => {
+                    const row = document.createElement('tr');
+                    const firstDayOfWeek = week.find(d => d);
+                    
+                    if (firstDayOfWeek && !renderedMonths.includes(firstDayOfWeek.getMonth())) {
+                        const monthKey = firstDayOfWeek.getMonth();
+                        const monthName = new Date(firstDayOfWeek.getFullYear(), monthKey).toLocaleString('pt-BR', { month: 'long' }).toUpperCase();
+                        const colorClass = monthKey === startDate.getMonth() ? 'bg-indigo-500' : 'bg-blue-500';
+                        
+                        const monthCell = document.createElement('td');
+                        monthCell.className = `font-bold text-sm text-white p-2 ${colorClass}`;
+                        monthCell.style.width = '50px';
+                        monthCell.style.writingMode = 'vertical-rl';
+                        monthCell.style.textOrientation = 'mixed';
+                        monthCell.style.transform = 'rotate(180deg)';
+                        monthCell.textContent = monthName;
+                        monthCell.rowSpan = Math.ceil(monthRowspans[monthKey] / 7);
+                        row.appendChild(monthCell);
+                        renderedMonths.push(monthKey);
+                    }
+
+                    week.forEach((day, dayIndex) => {
+                        const cell = document.createElement('td');
+                        cell.className = `border-2 border-slate-300 h-24 p-1 align-top ${dayIndex >= 5 ? 'bg-slate-50' : ''}`;
+                        if (day) {
+                            const monthShort = day.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
+                            const dateString = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                            
+                            const isFirstMonth = day.getMonth() === startDate.getMonth();
+                            const dateColorClass = isFirstMonth ? 'bg-indigo-500 text-white' : 'bg-blue-500 text-white';
+
+                            cell.innerHTML = `
+                                <div class="mb-1"><span class="date-label block w-full ${dateColorClass} text-base font-black py-1 rounded-md shadow-sm">${day.getDate()}/${monthShort}</span></div>
+                                <div class="flex flex-col justify-start items-center space-y-1 px-2"></div>`;
+                            const container = cell.querySelector('.flex-col');
+                            for (let i = 0; i < 2; i++) {
+                                const select = document.createElement('select');
+                                select.className = 'agent-name-input';
+                                select.dataset.date = dateString;
+                                select.dataset.index = i;
+                                select.innerHTML = `<option value=""></option>${ALLOWED_NAMES.map(n => `<option value="${n}">${n}</option>`).join('')}`;
+                                select.addEventListener('change', (e) => {
+                                    updateSummary();
+                                    adjustSelectWidth(e.target);
+                                    applyPlaceholderStyle(e.target);
+                                });
+                                container.appendChild(select);
+                            }
+                        } else {
+                            cell.innerHTML = '&nbsp;';
+                        }
+                        row.appendChild(cell);
+                    });
+                    calendarBody.appendChild(row);
+                });
+                
+                if (auth && auth.currentUser) {
+                    loadScheduleData(year, month, scheduleType);
+                } else {
+                    updateSummary();
+                }
+
+                if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
+                    enableEditing();
+                } else {
+                    disableEditing();
+                }
+            };
+            
+            const updateTitle = (year, month) => {
+                const firstMonthName = PT_BR_MONTHS[month];
+                const secondMonth = (month + 1) % 12;
+                const secondMonthName = PT_BR_MONTHS[secondMonth];
+                let yearOfSecondMonth = year;
+                if (month === 11) { yearOfSecondMonth++; }
+                dateTitlePart.textContent = ` - ${firstMonthName}/${secondMonthName} - ${yearOfSecondMonth}`;
+            };
+            
+            const handleDateChange = () => {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const scheduleType = scheduleTypeSelect.value;
+                
+                // Atualizado para novo contexto
+                if (scheduleType === 'escala_sr_artur') {
+                    editableTitlePart.textContent = 'ESCALA SR. ARTUR';
+                    locationPart.textContent = '';
+                } else {
+                    editableTitlePart.textContent = 'ESCALA EXTRA';
+                    locationPart.textContent = '';
+                }
+                
+                generateCalendar(year, month, scheduleType);
+                updateTitle(year, month);
+            };
+
+            const initialize = () => {
+                const today = new Date();
+                const currentYear = today.getFullYear();
+                let currentMonth = today.getMonth();
+
+                PT_BR_MONTHS.forEach((monthName, index) => {
+                    monthSelect.add(new Option(monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase(), index));
+                });
+
+                for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+                    yearSelect.add(new Option(i, i));
+                }
+
+                let initialMonth = currentMonth;
+                let initialYear = currentYear;
+                if (today.getDate() <= 15) {
+                   initialMonth = currentMonth - 1;
+                   if (initialMonth < 0) {
+                       initialMonth = 11;
+                       initialYear--;
+                   }
+                }
+                
+                monthSelect.value = initialMonth;
+                yearSelect.value = initialYear;
+                
+                handleDateChange();
+            };
+            
+            saveButton.addEventListener('click', saveScheduleData);
+            monthSelect.addEventListener('change', handleDateChange);
+            yearSelect.addEventListener('change', handleDateChange);
+            scheduleTypeSelect.addEventListener('change', handleDateChange);
+            
+            initialize(); 
+        };
+
+        const main = async () => {
+            // CONFIGURAÇÃO ATUALIZADA DO NOVO BANCO DE DADOS
+            const firebaseConfig = {
+                apiKey: "AIzaSyAWqPTJLiyH99CnQfgjkPdWQNTWc1zn6YA",
+                authDomain: "escalaartur.firebaseapp.com",
+                projectId: "escalaartur",
+                storageBucket: "escalaartur.firebasestorage.app",
+                messagingSenderId: "975460896152",
+                appId: "1:975460896152:web:21b9bb58e451aabb22efed"
+            };
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug');
+
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        userId = user.uid;
+                        initializeAppLogic(); 
+                    } else {
+                        signInAnonymously(auth).catch(anonError => {
+                            console.error("Login anônimo falhou:", anonError);
+                        });
+                    }
+                });
+
+            } catch (error) {
+                console.error("Inicialização do Firebase falhou:", error);
+            }
+        };
+
+        main();
+    </script>
+</body>
+</html>
