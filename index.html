@@ -418,6 +418,9 @@
         let userId;
         let isAppInitialized = false;
 
+        // EMAILS PERMITIDOS
+        const ALLOWED_EMAILS = ['machaddoo@gmail.com', 'adenisson@yahoo.com.br'];
+
         const initializeAppLogic = () => {
             if (isAppInitialized) return;
             isAppInitialized = true;
@@ -680,8 +683,8 @@
                 }
 
                 const currentUserEmail = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : '';
-                if (currentUserEmail !== 'machaddoo@gmail.com') {
-                     alert("ERRO DE SEGURANÇA: Seu usuário não tem permissão para alterar dados. Apenas 'machaddoo@gmail.com' pode salvar.");
+                if (!ALLOWED_EMAILS.includes(currentUserEmail)) {
+                     alert("ERRO DE SEGURANÇA: Seu usuário não tem permissão para alterar dados.");
                      logout();
                      return;
                 }
@@ -775,6 +778,23 @@
                 }
             }
 
+            function handleDateChange() {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const scheduleType = scheduleTypeSelect.value;
+                
+                if (scheduleType === 'escala_sr_artur') {
+                    editableTitlePart.textContent = 'ESCALA SR. ARTUR';
+                    locationPart.textContent = '';
+                } else {
+                    editableTitlePart.textContent = 'ESCALA EXTRA';
+                    locationPart.textContent = '';
+                }
+                
+                generateCalendar(year, month, scheduleType);
+                updateTitle(year, month);
+            }
+
             function generateCalendar(year, month, scheduleType) {
                 calendarBody.innerHTML = '';
                 const startDate = new Date(year, month, 16);
@@ -863,23 +883,6 @@
                 } else {
                     disableEditing();
                 }
-            }
-
-            function handleDateChange() {
-                const year = parseInt(yearSelect.value);
-                const month = parseInt(monthSelect.value);
-                const scheduleType = scheduleTypeSelect.value;
-                
-                if (scheduleType === 'escala_sr_artur') {
-                    editableTitlePart.textContent = 'ESCALA SR. ARTUR';
-                    locationPart.textContent = '';
-                } else {
-                    editableTitlePart.textContent = 'ESCALA EXTRA';
-                    locationPart.textContent = '';
-                }
-                
-                generateCalendar(year, month, scheduleType);
-                updateTitle(year, month);
             }
 
             async function loadPreviousScales() {
@@ -1043,8 +1046,8 @@
                 
                 registerError.classList.add('hidden');
 
-                if (email !== 'machaddoo@gmail.com') {
-                    registerError.textContent = "Apenas o email machaddoo@gmail.com tem permissão para cadastro.";
+                if (!ALLOWED_EMAILS.includes(email)) {
+                    registerError.textContent = "Este email não tem permissão para cadastro.";
                     registerError.classList.remove('hidden');
                     return;
                 }
