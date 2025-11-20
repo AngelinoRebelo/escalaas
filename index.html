@@ -506,7 +506,6 @@
             const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
             
             const PT_BR_MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
-            // NOMES ATUALIZADOS CONFORME SOLICITADO
             const ALLOWED_NAMES = ['ESCALA', 'MARTILIANO', 'JORDELIO', 'JORDAM', 'VICTORINO', 'ADENISOM'];
 
             function prepareForPrint() {
@@ -730,13 +729,13 @@
             // Submit Cadastro (Restrito)
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const email = document.getElementById('reg-email').value.trim();
+                const email = document.getElementById('reg-email').value.trim().toLowerCase(); // NORMALIZAÇÃO DO EMAIL
                 const password = document.getElementById('reg-password').value;
                 const confirmPassword = document.getElementById('reg-confirm-password').value;
                 
                 registerError.classList.add('hidden');
 
-                // VALIDAÇÃO RESTRITA DE EMAIL
+                // VALIDAÇÃO RESTRITA DE EMAIL (REFORÇADA)
                 if (email !== 'machaddoo@gmail.com') {
                     registerError.textContent = "Apenas o email machaddoo@gmail.com tem permissão para cadastro.";
                     registerError.classList.remove('hidden');
@@ -830,9 +829,16 @@
 
             const saveScheduleData = async () => {
                 if (!db || !auth.currentUser) {
-                     // Mostra o modal se tentar salvar sem estar logado
                     loginModal.classList.remove('hidden');
                     return;
+                }
+
+                // SEGURANÇA ADICIONAL: Verificar se o email atual é o permitido antes de salvar
+                const currentUserEmail = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : '';
+                if (currentUserEmail !== 'machaddoo@gmail.com') {
+                     alert("ERRO DE SEGURANÇA: Seu usuário não tem permissão para alterar dados. Apenas 'machaddoo@gmail.com' pode salvar.");
+                     logout();
+                     return;
                 }
 
                 saveButton.disabled = true;
@@ -920,7 +926,6 @@
 
                 } catch(error) {
                     console.warn("Não foi possível carregar os dados (pode exigir login):", error.code);
-                    // Não limpa a tela, deixa os campos vazios editáveis se for o caso ou apenas vazios
                     updateSummary();
                 }
             };
@@ -1092,70 +1097,16 @@
                     calendarBody.appendChild(row);
                 });
                 
-                // Tenta carregar dados mesmo sem user (pode funcionar se regras permitirem)
+                
                 loadScheduleData(year, month, scheduleType);
-
-                // Controle de edição visual
+                
+                updateTitle(year, month);
+                
                 if (auth && auth.currentUser) {
                     enableEditing();
                 } else {
                     disableEditing();
                 }
-            };
-            
-            const updateTitle = (year, month) => {
-                const firstMonthName = PT_BR_MONTHS[month];
-                const secondMonth = (month + 1) % 12;
-                const secondMonthName = PT_BR_MONTHS[secondMonth];
-                let yearOfSecondMonth = year;
-                if (month === 11) { yearOfSecondMonth++; }
-                dateTitlePart.textContent = ` - ${firstMonthName}/${secondMonthName} - ${yearOfSecondMonth}`;
-            };
-            
-            const handleDateChange = () => {
-                const year = parseInt(yearSelect.value);
-                const month = parseInt(monthSelect.value);
-                const scheduleType = scheduleTypeSelect.value;
-                
-                if (scheduleType === 'escala_sr_artur') {
-                    editableTitlePart.textContent = 'ESCALA SR. ARTUR';
-                    locationPart.textContent = '';
-                } else {
-                    editableTitlePart.textContent = 'ESCALA EXTRA';
-                    locationPart.textContent = '';
-                }
-                
-                generateCalendar(year, month, scheduleType);
-                updateTitle(year, month);
-            };
-
-            const initialize = () => {
-                const today = new Date();
-                const currentYear = today.getFullYear();
-                let currentMonth = today.getMonth();
-
-                PT_BR_MONTHS.forEach((monthName, index) => {
-                    monthSelect.add(new Option(monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase(), index));
-                });
-
-                for (let i = currentYear - 5; i <= currentYear + 5; i++) {
-                    yearSelect.add(new Option(i, i));
-                }
-
-                let initialMonth = currentMonth;
-                let initialYear = currentYear;
-                if (today.getDate() <= 15) {
-                   initialMonth = currentMonth - 1;
-                   if (initialMonth < 0) {
-                       initialMonth = 11;
-                       initialYear--;
-                   }
-                }
-                
-                monthSelect.value = initialMonth;
-                yearSelect.value = initialYear;
-                
-                handleDateChange();
             };
             
             saveButton.addEventListener('click', saveScheduleData);
@@ -1167,14 +1118,16 @@
         };
 
         const main = async () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyAWqPTJLiyH99CnQfgjkPdWQNTWc1zn6YA",
-                authDomain: "escalaartur.firebaseapp.com",
-                projectId: "escalaartur",
-                storageBucket: "escalaartur.firebasestorage.app",
-                messagingSenderId: "975460896152",
-                appId: "1:975460896152:web:21b9bb58e451aabb22efed"
-            };
+            // CONFIGURAÇÃO OFUSCADA - BASE64 PARA 'ESCONDER' NO CÓDIGO
+            const ENCODED_CONFIG = "eyJhcGlLZXkiOiJBSXphU3lBV3FQVEpMaXlIOTlDblFmZ2prUGRXUU5UV2Mxem42WUEiLCJhdXRoRG9tYWluIjoiZXNjYWxhYXJ0dXIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZXNjYWxhYXJ0dXIiLCJzdG9yYWdlQnVja2V0IjoiZXNjYWxhYXJ0dXIuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiOTc1NDYwODk2MTUyIiwiYXBwSWQiOiIxOjk3NTQ2MDg5NjE1Mjp3ZWI6MjFiOWJiNThlNDUxYWFiYjIyZWZlZCJ9";
+            
+            let firebaseConfig;
+            try {
+                firebaseConfig = JSON.parse(atob(ENCODED_CONFIG));
+            } catch (e) {
+                console.error("Erro ao decodificar configuração.", e);
+                return;
+            }
 
             try {
                 const app = initializeApp(firebaseConfig);
@@ -1189,9 +1142,7 @@
                     } else {
                         console.log("Sem usuário logado (modo visualização).");
                         userId = null;
-                        // NÃO tentamos login anônimo aqui para evitar o erro
                     }
-                    // Inicializa a UI sempre, logado ou não
                     initializeAppLogic();
                 });
 
