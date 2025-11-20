@@ -251,6 +251,21 @@
                 page-break-inside: avoid;
                 page-break-after: auto;
             }
+            
+            /* Estilos para as abas do modal */
+            .modal-tab {
+                padding: 0.5rem 1rem;
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                color: #64748b;
+                font-weight: 500;
+                transition: all 0.2s;
+            }
+            .modal-tab.active {
+                border-bottom-color: #4f46e5;
+                color: #4f46e5;
+                font-weight: 700;
+            }
         }
     </style>
 </head>
@@ -259,19 +274,45 @@
     <!-- Modal de Login -->
     <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm mx-4">
-            <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Acesso Restrito</h2>
-            <form id="login-form">
+            
+            <!-- Abas do Modal -->
+            <div class="flex justify-center mb-6 border-b border-gray-200">
+                <button id="tab-login" class="modal-tab active flex-1 text-center pb-2 text-indigo-600 border-b-2 border-indigo-600 font-bold">Entrar</button>
+                <button id="tab-register" class="modal-tab flex-1 text-center pb-2 text-slate-500 hover:text-slate-700">Primeiro Acesso</button>
+            </div>
+
+            <!-- Formulário de Login -->
+            <form id="login-form" class="block">
                 <div class="mb-4">
-                    <label for="username" class="block text-sm font-medium text-slate-700">Usuário (Email)</label>
-                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                    <label for="username" class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" id="username" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                 </div>
                 <div class="mb-6">
                     <label for="password" class="block text-sm font-medium text-slate-700">Senha</label>
                     <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                 </div>
-                <p id="login-error" class="text-red-500 text-sm text-center mb-4 hidden">Usuário ou senha inválidos.</p>
+                <p id="login-error" class="text-red-500 text-sm text-center mb-4 hidden"></p>
                 <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Entrar</button>
             </form>
+
+            <!-- Formulário de Cadastro (Primeiro Acesso) -->
+            <form id="register-form" class="hidden">
+                <div class="mb-4">
+                    <label for="reg-email" class="block text-sm font-medium text-slate-700">Email (Restrito)</label>
+                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="ex: machaddoo@gmail.com" required>
+                </div>
+                <div class="mb-4">
+                    <label for="reg-password" class="block text-sm font-medium text-slate-700">Senha</label>
+                    <input type="password" id="reg-password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" minlength="6" required>
+                </div>
+                <div class="mb-6">
+                    <label for="reg-confirm-password" class="block text-sm font-medium text-slate-700">Confirmar Senha</label>
+                    <input type="password" id="reg-confirm-password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" minlength="6" required>
+                </div>
+                <p id="register-error" class="text-red-500 text-sm text-center mb-4 hidden"></p>
+                <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Cadastrar</button>
+            </form>
+
             <button id="close-modal-btn" class="mt-4 w-full text-slate-500 text-sm hover:text-slate-700 underline">Fechar</button>
         </div>
     </div>
@@ -414,7 +455,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let db, auth;
@@ -441,8 +482,15 @@
             const loginButton = document.getElementById('login-button');
             const logoutButton = document.getElementById('logout-button');
             const loginModal = document.getElementById('login-modal');
+            
+            // Elementos do Modal (Abas e Forms)
             const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
             const loginError = document.getElementById('login-error');
+            const registerError = document.getElementById('register-error');
+            
             const closeModalBtn = document.getElementById('close-modal-btn');
             const tabsNav = document.getElementById('tabs-nav');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -458,7 +506,8 @@
             const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
             
             const PT_BR_MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
-            const ALLOWED_NAMES = ['EDUARDO', 'ESCALA', 'GABRIEL', 'GARCEZ', 'LEANDRO', 'LISBOA', 'MALCHER', 'PENNA', 'THEODORO', 'VIEIRA', 'WASHINGTON'];
+            // NOMES ATUALIZADOS CONFORME SOLICITADO
+            const ALLOWED_NAMES = ['ESCALA', 'MARTILIANO', 'JORDELIO', 'JORDAM', 'VICTORINO', 'ADENISOM'];
 
             function prepareForPrint() {
                 console.log("🖨️ Preparando para impressão...");
@@ -628,6 +677,35 @@
                 }
             });
 
+            // Lógica de Abas do Modal
+            const switchModalTab = (tab) => {
+                if (tab === 'login') {
+                    tabLogin.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabLogin.classList.remove('text-slate-500');
+                    
+                    tabRegister.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabRegister.classList.add('text-slate-500');
+                    
+                    loginForm.classList.remove('hidden');
+                    registerForm.classList.add('hidden');
+                } else {
+                    tabRegister.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabRegister.classList.remove('text-slate-500');
+                    
+                    tabLogin.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabLogin.classList.add('text-slate-500');
+                    
+                    registerForm.classList.remove('hidden');
+                    loginForm.classList.add('hidden');
+                }
+                loginError.classList.add('hidden');
+                registerError.classList.add('hidden');
+            };
+
+            tabLogin.addEventListener('click', () => switchModalTab('login'));
+            tabRegister.addEventListener('click', () => switchModalTab('register'));
+
+            // Submit Login
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const username = e.target.username.value;
@@ -636,7 +714,7 @@
                 loginError.classList.add('hidden');
                 
                 try {
-                    const userCredential = await signInWithEmailAndPassword(auth, username, password);
+                    await signInWithEmailAndPassword(auth, username, password);
                     enableEditing();
                     resetSessionTimer();
                     loginModal.classList.add('hidden');
@@ -646,6 +724,51 @@
                     console.error("Falha no login:", error.code);
                     loginError.textContent = "Email ou senha inválidos.";
                     loginError.classList.remove('hidden');
+                }
+            });
+
+            // Submit Cadastro (Restrito)
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('reg-email').value.trim();
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                
+                registerError.classList.add('hidden');
+
+                // VALIDAÇÃO RESTRITA DE EMAIL
+                if (email !== 'machaddoo@gmail.com') {
+                    registerError.textContent = "Apenas o email machaddoo@gmail.com tem permissão para cadastro.";
+                    registerError.classList.remove('hidden');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    registerError.textContent = "As senhas não conferem.";
+                    registerError.classList.remove('hidden');
+                    return;
+                }
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("Cadastro realizado com sucesso! Você já está logado.");
+                    enableEditing();
+                    resetSessionTimer();
+                    loginModal.classList.add('hidden');
+                    e.target.reset();
+                    // Volta para aba de login por padrão para próxima vez
+                    switchModalTab('login'); 
+
+                } catch (error) {
+                    console.error("Erro no cadastro:", error.code);
+                    if (error.code === 'auth/email-already-in-use') {
+                        registerError.textContent = "Este email já está cadastrado. Tente fazer login.";
+                    } else if (error.code === 'auth/weak-password') {
+                        registerError.textContent = "A senha deve ter pelo menos 6 caracteres.";
+                    } else {
+                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
+                    }
+                    registerError.classList.remove('hidden');
                 }
             });
             
@@ -744,9 +867,9 @@
                     console.error("Error saving schedule data: ", error);
                     saveButton.textContent = 'Erro ao Salvar';
                     if (error.code === 'permission-denied') {
-                        alert('Erro: Você não tem permissão para salvar.');
+                         alert(`Erro de Permissão: O banco de dados recusou a gravação.\n\nCausa provável: As Regras de Segurança (Security Rules) no Firebase Console estão bloqueando a escrita.\n\nSolução: Vá no Firebase Console > Firestore Database > Rules e altere para "allow write: if request.auth != null;"`);
                     } else {
-                         alert(`Ocorreu um erro ao salvar a escala.`);
+                         alert(`Ocorreu um erro ao salvar a escala: ${error.message}`);
                     }
                 } finally {
                     setTimeout(() => {
