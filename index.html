@@ -34,10 +34,12 @@
         .agent-name-input:disabled {
             background-color: #f3f4f6;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.9;
+            color: #1f2937;
+            font-weight: 700;
         }
         .agent-name-input.is-scale-placeholder {
-            opacity: 0.35;
+            opacity: 0.5;
             background-color: #f9fafb; /* gray-50 */
             border-style: dashed;
         }
@@ -299,7 +301,7 @@
             <form id="register-form" class="hidden">
                 <div class="mb-4">
                     <label for="reg-email" class="block text-sm font-medium text-slate-700">Email (Restrito)</label>
-                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="ex: machaddoo@gmail.com" required>
+                    <input type="email" id="reg-email" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Seu email autorizado" required>
                 </div>
                 <div class="mb-4">
                     <label for="reg-password" class="block text-sm font-medium text-slate-700">Senha</label>
@@ -408,6 +410,51 @@
         
     </main>
 
+    <!-- View de Impressão -->
+    <div id="print-view" class="hidden">
+        <div class="print-title-container">
+            <div class="print-title" id="print-title-text">ESCALA SR. ARTUR</div>
+        </div>
+        <div id="month-year-reference" class="month-year-reference"></div>
+
+        <div id="print-layout-wrapper" style="display: flex !important; flex-direction: row !important; width: 100% !important; gap: 12px !important; align-items: flex-start;">
+            
+            <table id="print-table" class="w-full" style="width: 70% !important;">
+                <thead>
+                    <tr class="week-header">
+                        <th>Mês</th>
+                        <th>SEGUNDA</th>
+                        <th>TERÇA</th>
+                        <th>QUARTA</th>
+                        <th>QUINTA</th>
+                        <th>SEXTA</th>
+                        <th>SÁBADO</th>
+                        <th>DOMINGO</th>
+                    </tr>
+                </thead>
+                <tbody id="print-body"></tbody>
+            </table>
+
+            <div class="print-summary-container" style="width: 30% !important; margin-top: 0 !important;">
+                <div style="background: #f8fafc !important; padding: 12px !important; border-radius: 6px !important; border: 1px solid #e2e8f0 !important; height: 100% !important;">
+                    <h2 style="font-size: 11pt !important; font-weight: bold !important; color: #1e293b !important; background: #e2e8f0 !important; margin: -12px -12px 12px -12px !important; padding: 8px 12px !important; border-radius: 6px 6px 0 0 !important; text-align: center !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;">
+                        Plantões Trabalhados
+                    </h2>
+                    <table class="print-summary-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left !important;">Agente</th>
+                                <th style="text-align: right !important;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="print-summary-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -457,8 +504,7 @@
             const printView = document.getElementById('print-view');
             const printBody = document.getElementById('print-body');
             const printSummaryBody = document.getElementById('print-summary-body');
-            const monthYearReference = document.getElementById('month-year-reference');
-            const printTitleText = document.getElementById('print-title-text');
+            // NOTA: Elementos de impressão serão capturados na hora para evitar erros
 
             let sessionTimeoutId = null;
             const SESSION_TIMEOUT_MS = 15 * 60 * 1000;
@@ -472,14 +518,24 @@
                 const month = parseInt(monthSelect.value);
                 const year = parseInt(yearSelect.value);
                 
-                const mainTitle = editableTitlePart.textContent || '';
-                const subTitle = locationPart.textContent || '';
-                printTitleText.textContent = mainTitle + subTitle;
+                // CAPTURA SEGURA DE ELEMENTOS DENTRO DA FUNÇÃO
+                const printTitleTextEl = document.getElementById('print-title-text');
+                const monthYearReferenceEl = document.getElementById('month-year-reference');
+                const editableTitlePartEl = document.getElementById('editable-title-part');
+                const locationPartEl = document.getElementById('location-part');
 
-                monthYearReference.textContent = `${PT_BR_MONTHS[month]} DE ${year}`;
+                if (printTitleTextEl) {
+                    const mainTitle = editableTitlePartEl ? (editableTitlePartEl.textContent || '') : '';
+                    const subTitle = locationPartEl ? (locationPartEl.textContent || '') : '';
+                    printTitleTextEl.textContent = mainTitle + subTitle;
+                }
+
+                if (monthYearReferenceEl) {
+                     monthYearReferenceEl.textContent = `${PT_BR_MONTHS[month]} DE ${year}`;
+                }
                 
-                printBody.innerHTML = '';
-                printSummaryBody.innerHTML = '';
+                if (printBody) printBody.innerHTML = '';
+                if (printSummaryBody) printSummaryBody.innerHTML = '';
                 
                 const agentCounts = {};
                 
@@ -547,28 +603,30 @@
                             printRow.appendChild(printDayCell);
                         }
                         
-                        printBody.appendChild(printRow);
+                        if (printBody) printBody.appendChild(printRow);
                 
             });
                 
                 const sortedAgents = Object.keys(agentCounts).sort();
                 
-                if (sortedAgents.length === 0) {
-                    printSummaryBody.innerHTML = `
-                        <tr>
-                            <td colspan="2" style="text-align: center; padding: 12px; color: #64748b; font-style: italic;">
-                                Nenhum plantão registrado
-                            </td>
-                        </tr>`;
-                } else {
-                    sortedAgents.forEach(name => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td style="font-weight: 600; color: #1e293b;">${name}</td>
-                            <td style="font-weight: bold; color: #1e40af; text-align: right;">${agentCounts[name]}</td>
-                        `;
-                        printSummaryBody.appendChild(row);
-                    });
+                if (printSummaryBody) {
+                    if (sortedAgents.length === 0) {
+                        printSummaryBody.innerHTML = `
+                            <tr>
+                                <td colspan="2" style="text-align: center; padding: 12px; color: #64748b; font-style: italic;">
+                                    Nenhum plantão registrado
+                                </td>
+                            </tr>`;
+                    } else {
+                        sortedAgents.forEach(name => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td style="font-weight: 600; color: #1e293b;">${name}</td>
+                                <td style="font-weight: bold; color: #1e40af; text-align: right;">${agentCounts[name]}</td>
+                            `;
+                            printSummaryBody.appendChild(row);
+                        });
+                    }
                 }
             }
 
@@ -619,6 +677,11 @@
                     signOut(auth).catch(error => console.error("Erro ao fazer logout:", error));
                 }
                 userId = null;
+                // Reload data as public view
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const scheduleType = scheduleTypeSelect.value;
+                loadScheduleData(year, month, scheduleType);
             }
 
             function updateSummary() {
@@ -773,7 +836,12 @@
                     updateSummary();
 
                 } catch(error) {
-                    console.warn("Não foi possível carregar os dados (pode exigir login):", error.code);
+                    if (error.code === 'permission-denied') {
+                        console.warn("Leitura bloqueada pelo Firebase (Rules). Verifique se 'allow read: if true;' está configurado.");
+                        alert("Aviso: Não foi possível carregar a escala pública. Verifique as Regras de Segurança no Firebase Console (allow read: if true).");
+                    } else {
+                        console.warn("Erro ao carregar dados:", error.code);
+                    }
                     updateSummary();
                 }
             }
@@ -1145,6 +1213,7 @@
                         console.log("Sem usuário logado (modo visualização).");
                         userId = null;
                     }
+                    // Chama a inicialização sempre, tendo usuário ou não
                     initializeAppLogic();
                 });
 
