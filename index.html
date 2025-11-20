@@ -408,51 +408,6 @@
         
     </main>
 
-    <!-- View de Impressão -->
-    <div id="print-view" class="hidden">
-        <div class="print-title-container">
-            <div class="print-title" id="print-title-text">ESCALA SR. ARTUR</div>
-        </div>
-        <div id="month-year-reference" class="month-year-reference"></div>
-
-        <div id="print-layout-wrapper" style="display: flex !important; flex-direction: row !important; width: 100% !important; gap: 12px !important; align-items: flex-start;">
-            
-            <table id="print-table" class="w-full" style="width: 70% !important;">
-                <thead>
-                    <tr class="week-header">
-                        <th>Mês</th>
-                        <th>SEGUNDA</th>
-                        <th>TERÇA</th>
-                        <th>QUARTA</th>
-                        <th>QUINTA</th>
-                        <th>SEXTA</th>
-                        <th>SÁBADO</th>
-                        <th>DOMINGO</th>
-                    </tr>
-                </thead>
-                <tbody id="print-body"></tbody>
-            </table>
-
-            <div class="print-summary-container" style="width: 30% !important; margin-top: 0 !important;">
-                <div style="background: #f8fafc !important; padding: 12px !important; border-radius: 6px !important; border: 1px solid #e2e8f0 !important; height: 100% !important;">
-                    <h2 style="font-size: 11pt !important; font-weight: bold !important; color: #1e293b !important; background: #e2e8f0 !important; margin: -12px -12px 12px -12px !important; padding: 8px 12px !important; border-radius: 6px 6px 0 0 !important; text-align: center !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;">
-                        Plantões Trabalhados
-                    </h2>
-                    <table class="print-summary-table">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left !important;">Agente</th>
-                                <th style="text-align: right !important;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="print-summary-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -627,33 +582,33 @@
                 }, 100);
             }
 
-            const enableEditing = () => {
+            function enableEditing() {
                 editableTitlePart.contentEditable = "true";
                 editableTitlePart.classList.add('hover:bg-slate-200', 'focus:ring-2', 'focus:ring-indigo-400');
                 document.querySelectorAll('.agent-name-input').forEach(el => el.disabled = false);
                 saveButton.disabled = false;
                 loginButton.classList.add('hidden');
                 logoutButton.classList.remove('hidden');
-            };
+            }
 
-            const disableEditing = () => {
+            function disableEditing() {
                 editableTitlePart.contentEditable = "false";
                 editableTitlePart.classList.remove('hover:bg-slate-200', 'focus:ring-2', 'focus:ring-indigo-400');
                 document.querySelectorAll('.agent-name-input').forEach(el => el.disabled = true);
                 saveButton.disabled = true;
                 loginButton.classList.remove('hidden');
                 logoutButton.classList.add('hidden');
-            };
+            }
             
-            const resetSessionTimer = () => {
+            function resetSessionTimer() {
                 clearTimeout(sessionTimeoutId);
                 sessionTimeoutId = setTimeout(() => {
                     alert('Sua sessão de edição expirou por inatividade.');
                     logout();
                 }, SESSION_TIMEOUT_MS);
-            };
+            }
 
-            const logout = () => {
+            function logout() {
                 disableEditing();
                 clearTimeout(sessionTimeoutId);
                 sessionTimeoutId = null;
@@ -661,127 +616,9 @@
                     signOut(auth).catch(error => console.error("Erro ao fazer logout:", error));
                 }
                 userId = null;
-            };
-
-            loginButton.addEventListener('click', () => loginModal.classList.remove('hidden'));
-            logoutButton.addEventListener('click', logout);
-            
-            if (closeModalBtn) {
-                closeModalBtn.addEventListener('click', () => loginModal.classList.add('hidden'));
             }
 
-            loginModal.addEventListener('click', (e) => {
-                if (e.target === loginModal) {
-                    loginModal.classList.add('hidden');
-                }
-            });
-
-            // Lógica de Abas do Modal
-            const switchModalTab = (tab) => {
-                if (tab === 'login') {
-                    tabLogin.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
-                    tabLogin.classList.remove('text-slate-500');
-                    
-                    tabRegister.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
-                    tabRegister.classList.add('text-slate-500');
-                    
-                    loginForm.classList.remove('hidden');
-                    registerForm.classList.add('hidden');
-                } else {
-                    tabRegister.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
-                    tabRegister.classList.remove('text-slate-500');
-                    
-                    tabLogin.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
-                    tabLogin.classList.add('text-slate-500');
-                    
-                    registerForm.classList.remove('hidden');
-                    loginForm.classList.add('hidden');
-                }
-                loginError.classList.add('hidden');
-                registerError.classList.add('hidden');
-            };
-
-            tabLogin.addEventListener('click', () => switchModalTab('login'));
-            tabRegister.addEventListener('click', () => switchModalTab('register'));
-
-            // Submit Login
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = e.target.username.value;
-                const password = e.target.password.value;
-                
-                loginError.classList.add('hidden');
-                
-                try {
-                    await signInWithEmailAndPassword(auth, username, password);
-                    enableEditing();
-                    resetSessionTimer();
-                    loginModal.classList.add('hidden');
-                    e.target.reset();
-
-                } catch (error) {
-                    console.error("Falha no login:", error.code);
-                    loginError.textContent = "Email ou senha inválidos.";
-                    loginError.classList.remove('hidden');
-                }
-            });
-
-            // Submit Cadastro (Restrito)
-            registerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('reg-email').value.trim().toLowerCase(); // NORMALIZAÇÃO DO EMAIL
-                const password = document.getElementById('reg-password').value;
-                const confirmPassword = document.getElementById('reg-confirm-password').value;
-                
-                registerError.classList.add('hidden');
-
-                // VALIDAÇÃO RESTRITA DE EMAIL (REFORÇADA)
-                if (email !== 'machaddoo@gmail.com') {
-                    registerError.textContent = "Apenas o email machaddoo@gmail.com tem permissão para cadastro.";
-                    registerError.classList.remove('hidden');
-                    return;
-                }
-
-                if (password !== confirmPassword) {
-                    registerError.textContent = "As senhas não conferem.";
-                    registerError.classList.remove('hidden');
-                    return;
-                }
-
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    alert("Cadastro realizado com sucesso! Você já está logado.");
-                    enableEditing();
-                    resetSessionTimer();
-                    loginModal.classList.add('hidden');
-                    e.target.reset();
-                    // Volta para aba de login por padrão para próxima vez
-                    switchModalTab('login'); 
-
-                } catch (error) {
-                    console.error("Erro no cadastro:", error.code);
-                    if (error.code === 'auth/email-already-in-use') {
-                        registerError.textContent = "Este email já está cadastrado. Tente fazer login.";
-                    } else if (error.code === 'auth/weak-password') {
-                        registerError.textContent = "A senha deve ter pelo menos 6 caracteres.";
-                    } else {
-                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
-                    }
-                    registerError.classList.remove('hidden');
-                }
-            });
-            
-            ['click', 'mousemove', 'keypress', 'change'].forEach(event => {
-                document.addEventListener(event, () => {
-                    if (sessionTimeoutId) {
-                        resetSessionTimer();
-                    }
-                });
-            });
-
-            printButton.addEventListener('click', handlePrint);
-
-            const updateSummary = () => {
+            function updateSummary() {
                 const agentCounts = {};
                 calendarBody.querySelectorAll('.agent-name-input').forEach(field => {
                     const name = field.value;
@@ -798,17 +635,17 @@
                         summaryBody.appendChild(row);
                     });
                 }
-            };
+            }
 
-            const applyPlaceholderStyle = (selectElement) => {
+            function applyPlaceholderStyle(selectElement) {
                 if (selectElement.value === 'ESCALA') {
                     selectElement.classList.add('is-scale-placeholder');
                 } else {
                     selectElement.classList.remove('is-scale-placeholder');
                 }
-            };
+            }
             
-            const adjustSelectWidth = (selectElement) => {
+            function adjustSelectWidth(selectElement) {
                 if (!selectElement || !selectElement.options) return;
                 if (!selectElement.value) {
                     selectElement.style.width = '100%';
@@ -825,15 +662,23 @@
                 document.body.appendChild(tempSpan);
                 selectElement.style.width = `${tempSpan.offsetWidth + 5}px`;
                 document.body.removeChild(tempSpan);
-            };
+            }
 
-            const saveScheduleData = async () => {
+            function updateTitle(year, month) {
+                const firstMonthName = PT_BR_MONTHS[month];
+                const secondMonth = (month + 1) % 12;
+                const secondMonthName = PT_BR_MONTHS[secondMonth];
+                let yearOfSecondMonth = year;
+                if (month === 11) { yearOfSecondMonth++; }
+                dateTitlePart.textContent = ` - ${firstMonthName}/${secondMonthName} - ${yearOfSecondMonth}`;
+            }
+
+            async function saveScheduleData() {
                 if (!db || !auth.currentUser) {
                     loginModal.classList.remove('hidden');
                     return;
                 }
 
-                // SEGURANÇA ADICIONAL: Verificar se o email atual é o permitido antes de salvar
                 const currentUserEmail = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : '';
                 if (currentUserEmail !== 'machaddoo@gmail.com') {
                      alert("ERRO DE SEGURANÇA: Seu usuário não tem permissão para alterar dados. Apenas 'machaddoo@gmail.com' pode salvar.");
@@ -883,9 +728,9 @@
                         saveButton.textContent = 'Salvar Escala';
                     }, 2000);
                 }
-            };
+            }
 
-            const loadScheduleData = async (year, month, scheduleType) => {
+            async function loadScheduleData(year, month, scheduleType) {
                 if (!db) return;
                 
                 const docId = `${year}-${String(month + 1).padStart(2, '0')}-${scheduleType}`;
@@ -928,95 +773,9 @@
                     console.warn("Não foi possível carregar os dados (pode exigir login):", error.code);
                     updateSummary();
                 }
-            };
-            
-            window.loadScheduleDataForCurrentView = loadScheduleData;
+            }
 
-            const loadPreviousScales = async () => {
-                if (!db) return;
-                
-                const listEl = pastScalesList;
-                listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Carregando escalas salvas...</p>';
-                
-                const schedulesRef = collection(db, `schedules/${appId}/periods`); 
-                try {
-                    const querySnapshot = await getDocs(schedulesRef);
-                    const scales = [];
-                    querySnapshot.forEach((doc) => {
-                        scales.push({ id: doc.id, ...doc.data() });
-                    });
-
-                    listEl.innerHTML = '';
-                    if (scales.length === 0) {
-                        listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Nenhuma escala salva encontrada.</p>';
-                        return;
-                    }
-                    
-                    scales.sort((a, b) => b.id.localeCompare(a.id));
-
-                    scales.forEach(scale => {
-                        const [year, month, ...typeParts] = scale.id.split('-');
-                        const type = typeParts.join('-');
-                        const monthName = PT_BR_MONTHS[parseInt(month) - 1];
-                        
-                        let scheduleTypeName;
-                        let typeColorClass;
-                        if (type === 'escala_sr_artur') {
-                            scheduleTypeName = 'Sr. Artur';
-                            typeColorClass = 'bg-blue-100 text-blue-800';
-                        } else {
-                            scheduleTypeName = 'Extra';
-                            typeColorClass = 'bg-purple-100 text-purple-800';
-                        }
-
-                        const card = document.createElement('div');
-                        card.className = 'block p-4 border border-slate-200 rounded-lg hover:shadow-md hover:border-indigo-400 cursor-pointer transition-all';
-                        card.innerHTML = `
-                            <h3 class="font-bold text-slate-800">${scale.title || 'Sem título'}</h3>
-                            <p class="text-sm text-slate-600">${monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase()} / ${year}</p>
-                            <p class="text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block ${typeColorClass}">${scheduleTypeName}</p>
-                        `;
-                        card.addEventListener('click', () => {
-                            yearSelect.value = year;
-                            monthSelect.value = parseInt(month) - 1;
-                            scheduleTypeSelect.value = type;
-                            handleDateChange();
-                            tabsNav.querySelector('button[data-tab="current-scale"]').click();
-                        });
-                        listEl.appendChild(card);
-                    });
-                } catch (error) {
-                    console.error("Error fetching previous scales:", error);
-                    if (error.code === 'permission-denied') {
-                        listEl.innerHTML = '<p class="text-red-500 col-span-full text-center">Faça login para ver as escalas salvas.</p>';
-                    } else {
-                        listEl.innerHTML = '<p class="text-red-500">Erro ao carregar escalas.</p>';
-                    }
-                }
-            };
-            
-            tabsNav.addEventListener('click', (e) => {
-                if (e.target.matches('.tab-button')) {
-                    const tabId = e.target.dataset.tab;
-                    tabsNav.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    tabContents.forEach(content => {
-                        if (tabId === 'current-scale') {
-                            if (content.id === 'current-scale-view') content.classList.remove('hidden');
-                            else content.classList.add('hidden');
-                        } else {
-                             if (content.id === 'past-scales-view') content.classList.remove('hidden');
-                             else content.classList.add('hidden');
-                        }
-                    });
-                    
-                    if (tabId === 'past-scales') {
-                        loadPreviousScales();
-                    }
-                }
-            });
-
-            const generateCalendar = (year, month, scheduleType) => {
+            function generateCalendar(year, month, scheduleType) {
                 calendarBody.innerHTML = '';
                 const startDate = new Date(year, month, 16);
                 const endDate = new Date(year, month + 1, 15);
@@ -1097,28 +856,268 @@
                     calendarBody.appendChild(row);
                 });
                 
-                
                 loadScheduleData(year, month, scheduleType);
-                
-                updateTitle(year, month);
                 
                 if (auth && auth.currentUser) {
                     enableEditing();
                 } else {
                     disableEditing();
                 }
+            }
+
+            function handleDateChange() {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const scheduleType = scheduleTypeSelect.value;
+                
+                if (scheduleType === 'escala_sr_artur') {
+                    editableTitlePart.textContent = 'ESCALA SR. ARTUR';
+                    locationPart.textContent = '';
+                } else {
+                    editableTitlePart.textContent = 'ESCALA EXTRA';
+                    locationPart.textContent = '';
+                }
+                
+                generateCalendar(year, month, scheduleType);
+                updateTitle(year, month);
+            }
+
+            async function loadPreviousScales() {
+                if (!db) return;
+                
+                const listEl = pastScalesList;
+                listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Carregando escalas salvas...</p>';
+                
+                const schedulesRef = collection(db, `schedules/${appId}/periods`); 
+                try {
+                    const querySnapshot = await getDocs(schedulesRef);
+                    const scales = [];
+                    querySnapshot.forEach((doc) => {
+                        scales.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    listEl.innerHTML = '';
+                    if (scales.length === 0) {
+                        listEl.innerHTML = '<p class="text-slate-500 col-span-full text-center">Nenhuma escala salva encontrada.</p>';
+                        return;
+                    }
+                    
+                    scales.sort((a, b) => b.id.localeCompare(a.id));
+
+                    scales.forEach(scale => {
+                        const [year, month, ...typeParts] = scale.id.split('-');
+                        const type = typeParts.join('-');
+                        const monthName = PT_BR_MONTHS[parseInt(month) - 1];
+                        
+                        let scheduleTypeName;
+                        let typeColorClass;
+                        if (type === 'escala_sr_artur') {
+                            scheduleTypeName = 'Sr. Artur';
+                            typeColorClass = 'bg-blue-100 text-blue-800';
+                        } else {
+                            scheduleTypeName = 'Extra';
+                            typeColorClass = 'bg-purple-100 text-purple-800';
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'block p-4 border border-slate-200 rounded-lg hover:shadow-md hover:border-indigo-400 cursor-pointer transition-all';
+                        card.innerHTML = `
+                            <h3 class="font-bold text-slate-800">${scale.title || 'Sem título'}</h3>
+                            <p class="text-sm text-slate-600">${monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase()} / ${year}</p>
+                            <p class="text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block ${typeColorClass}">${scheduleTypeName}</p>
+                        `;
+                        card.addEventListener('click', () => {
+                            yearSelect.value = year;
+                            monthSelect.value = parseInt(month) - 1;
+                            scheduleTypeSelect.value = type;
+                            handleDateChange();
+                            tabsNav.querySelector('button[data-tab="current-scale"]').click();
+                        });
+                        listEl.appendChild(card);
+                    });
+                } catch (error) {
+                    console.error("Error fetching previous scales:", error);
+                    if (error.code === 'permission-denied') {
+                        listEl.innerHTML = '<p class="text-red-500 col-span-full text-center">Faça login para ver as escalas salvas.</p>';
+                    } else {
+                        listEl.innerHTML = '<p class="text-red-500">Erro ao carregar escalas.</p>';
+                    }
+                }
+            }
+
+            function initialize() {
+                const today = new Date();
+                const currentYear = today.getFullYear();
+                let currentMonth = today.getMonth();
+
+                PT_BR_MONTHS.forEach((monthName, index) => {
+                    monthSelect.add(new Option(monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase(), index));
+                });
+
+                for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+                    yearSelect.add(new Option(i, i));
+                }
+
+                let initialMonth = currentMonth;
+                let initialYear = currentYear;
+                if (today.getDate() <= 15) {
+                   initialMonth = currentMonth - 1;
+                   if (initialMonth < 0) {
+                       initialMonth = 11;
+                       initialYear--;
+                   }
+                }
+                
+                monthSelect.value = initialMonth;
+                yearSelect.value = initialYear;
+                
+                handleDateChange();
+            }
+
+            loginButton.addEventListener('click', () => loginModal.classList.remove('hidden'));
+            logoutButton.addEventListener('click', logout);
+            
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => loginModal.classList.add('hidden'));
+            }
+
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) {
+                    loginModal.classList.add('hidden');
+                }
+            });
+
+            const switchModalTab = (tab) => {
+                if (tab === 'login') {
+                    tabLogin.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabLogin.classList.remove('text-slate-500');
+                    
+                    tabRegister.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabRegister.classList.add('text-slate-500');
+                    
+                    loginForm.classList.remove('hidden');
+                    registerForm.classList.add('hidden');
+                } else {
+                    tabRegister.classList.add('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabRegister.classList.remove('text-slate-500');
+                    
+                    tabLogin.classList.remove('active', 'text-indigo-600', 'border-indigo-600', 'font-bold');
+                    tabLogin.classList.add('text-slate-500');
+                    
+                    registerForm.classList.remove('hidden');
+                    loginForm.classList.add('hidden');
+                }
+                loginError.classList.add('hidden');
+                registerError.classList.add('hidden');
             };
+
+            tabLogin.addEventListener('click', () => switchModalTab('login'));
+            tabRegister.addEventListener('click', () => switchModalTab('register'));
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = e.target.username.value;
+                const password = e.target.password.value;
+                
+                loginError.classList.add('hidden');
+                
+                try {
+                    await signInWithEmailAndPassword(auth, username, password);
+                    enableEditing();
+                    resetSessionTimer();
+                    loginModal.classList.add('hidden');
+                    e.target.reset();
+
+                } catch (error) {
+                    console.error("Falha no login:", error.code);
+                    loginError.textContent = "Email ou senha inválidos.";
+                    loginError.classList.remove('hidden');
+                }
+            });
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('reg-email').value.trim().toLowerCase();
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                
+                registerError.classList.add('hidden');
+
+                if (email !== 'machaddoo@gmail.com') {
+                    registerError.textContent = "Apenas o email machaddoo@gmail.com tem permissão para cadastro.";
+                    registerError.classList.remove('hidden');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    registerError.textContent = "As senhas não conferem.";
+                    registerError.classList.remove('hidden');
+                    return;
+                }
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("Cadastro realizado com sucesso! Você já está logado.");
+                    enableEditing();
+                    resetSessionTimer();
+                    loginModal.classList.add('hidden');
+                    e.target.reset();
+                    switchModalTab('login'); 
+
+                } catch (error) {
+                    console.error("Erro no cadastro:", error.code);
+                    if (error.code === 'auth/email-already-in-use') {
+                        registerError.textContent = "Este email já está cadastrado. Tente fazer login.";
+                    } else if (error.code === 'auth/weak-password') {
+                        registerError.textContent = "A senha deve ter pelo menos 6 caracteres.";
+                    } else {
+                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
+                    }
+                    registerError.classList.remove('hidden');
+                }
+            });
+            
+            ['click', 'mousemove', 'keypress', 'change'].forEach(event => {
+                document.addEventListener(event, () => {
+                    if (sessionTimeoutId) {
+                        resetSessionTimer();
+                    }
+                });
+            });
+
+            printButton.addEventListener('click', handlePrint);
             
             saveButton.addEventListener('click', saveScheduleData);
             monthSelect.addEventListener('change', handleDateChange);
             yearSelect.addEventListener('change', handleDateChange);
             scheduleTypeSelect.addEventListener('change', handleDateChange);
             
+            tabsNav.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-button')) {
+                    const tabId = e.target.dataset.tab;
+                    tabsNav.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    tabContents.forEach(content => {
+                        if (tabId === 'current-scale') {
+                            if (content.id === 'current-scale-view') content.classList.remove('hidden');
+                            else content.classList.add('hidden');
+                        } else {
+                             if (content.id === 'past-scales-view') content.classList.remove('hidden');
+                             else content.classList.add('hidden');
+                        }
+                    });
+                    
+                    if (tabId === 'past-scales') {
+                        loadPreviousScales();
+                    }
+                }
+            });
+            
             initialize(); 
         };
 
         const main = async () => {
-            // CONFIGURAÇÃO OFUSCADA - BASE64 PARA 'ESCONDER' NO CÓDIGO
+            // CONFIGURAÇÃO OFUSCADA
             const ENCODED_CONFIG = "eyJhcGlLZXkiOiJBSXphU3lBV3FQVEpMaXlIOTlDblFmZ2prUGRXUU5UV2Mxem42WUEiLCJhdXRoRG9tYWluIjoiZXNjYWxhYXJ0dXIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZXNjYWxhYXJ0dXIiLCJzdG9yYWdlQnVja2V0IjoiZXNjYWxhYXJ0dXIuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiOTc1NDYwODk2MTUyIiwiYXBwSWQiOiIxOjk3NTQ2MDg5NjE1Mjp3ZWI6MjFiOWJiNThlNDUxYWFiYjIyZWZlZCJ9";
             
             let firebaseConfig;
